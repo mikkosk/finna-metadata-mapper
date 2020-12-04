@@ -1,0 +1,49 @@
+::Kansallisen kokoomuksen eduskuntaryhmä
+Mikko Asunta
+Elsi Hetemäki-Olander
+Matti Hokkanen
+Harri Holkeri
+Erkki Huurtamo
+::Sosialidemokraattinen eduskuntaryhmä
+Lyyli Aalto
+Matti Ahde
+Arvo Ahonen
+Aimo Ajo
+Pirkko Aro
+Reino Breilin
+::Suomen kansan demokraattisen liiton eduskuntaryhmä
+Paavo Aitio
+Ele Alenius
+Ilkka-Christian Björklund
+Mikko Ekorre
+Kaino Haapanen
+Veikko Helle
+Kuuno Honkonen
+Anna-Liisa Hyvönen
+::Suomen kansan yhtenäisyyden puolueen eduskuntaryhmä
+Matti Asunmaa
+Matti Hannola
+Kalevi Huotari
+Heikki Kainulainen
+Mauno Kurppa
+::Suomen maaseudun puolueen eduskuntaryhmä
+Pentti Antila
+Matti Asunmaa
+J. Juhani Kortesalmi
+Mauno Kurppa
+Rainer Lemström
+Lauri Linna
+Aune Mänttäri
+Artturi Niemelä
+::Perustuslaillisen kansanpuolueen eduskuntaryhmä
+Georg C. Ehrnrooth
+Salme Katajavuori
+::Ruotsalainen kansanpuolue
+Georg C. Ehrnrooth
+Kristian Gestrin
+::Liberaalinen kansanpuolueen eduskuntaryhmä
+Pirkko Aro
+Olavi Borg
+::Kristillisen liiton eduskuntaryhmä
+Antero Juntumaa
+Olavi Ronkainen
