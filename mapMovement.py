@@ -6,6 +6,7 @@ import re
 import urllib.request, json
 import mplcursors
 import matplotlib.patches as mpatches
+import numpy as np
 
 #dictionary of colors to use when plotting
 colorNames = {0: 'b', 1: 'g', 2: 'r', 3: 'c', 4: 'm', 5: 'y', 6: 'k', 7: 'w', 8:'tab:orange', 9:'tab:gray', 10:'tab:brown' }
@@ -88,7 +89,7 @@ def fetchFinna(wordsToUrl, towns, originalWords, parties):
         while True:
 
             #Now finding pictures, but you could change it to photos, although many of the photos are filed as pictures, so would not recommend
-            url = f"https://api.finna.fi/api/v1/search?lookfor={search}&type=AllFields&field%5B%5D=summary&field%5B%5D=events&field%5B%5D=subjects&filter%5B%5D=format%3A%220%2FImage%2F%22&sort=relevance%2Cid%20asc&page={pageNumber}&limit=100&prettyPrint=false&lng=fi"
+            url = f"https://api.finna.fi/api/v1/search?lookfor={search}&type=AllFields&field%5B%5D=institutions&field%5B%5D=summary&field%5B%5D=events&field%5B%5D=subjects&filter%5B%5D=format%3A%220%2FImage%2F%22&sort=relevance%2Cid%20asc&page={pageNumber}&limit=100&prettyPrint=false&lng=fi"
             response = urllib.request.urlopen(url).read()
             data = json.loads(response)
             
@@ -98,8 +99,9 @@ def fetchFinna(wordsToUrl, towns, originalWords, parties):
                     k = 1
                     matchedTown = matchTown(towns.keys(), str(i))
                     matchedDate = matchDate(str(i))
+                    institution = i["institutions"][0]["translated"]
                     if bool(matchedTown) & bool(matchedDate):
-                        rowDict = {"Target": originalWords[search], "Date": matchedDate["date"], "Month": matchedDate["month"], "Year": matchedDate["year"], "Town": matchedTown, "Lat": towns[matchedTown]["coorN"], "Lon": towns[matchedTown]["coorE"], "Party": parties[search]}
+                        rowDict = {"Target": originalWords[search], "Date": matchedDate["date"], "Month": matchedDate["month"], "Year": matchedDate["year"], "Town": matchedTown, "Lat": towns[matchedTown]["coorN"], "Lon": towns[matchedTown]["coorE"], "Party": parties[search], "Institution": institution}
                         metadatas.append(rowDict)
                 if data["resultCount"] < pageNumber * 100:
                     break
@@ -229,6 +231,7 @@ def drawGeoPlots(data, startYear, endYear):
         #makes the annotations hoverable, currently causes error messages, but nothing that breaks the program
         crs.connect("add", lambda sel: sel.annotation.set_text(annotations[sel.target.index]))
 
+
 #draws a graph for finding out how many hits there every year by party
 def drawLineGraph(data, startYear, endYear):
     byTown = data[data["Year"] <= str(endYear)]
@@ -236,23 +239,70 @@ def drawLineGraph(data, startYear, endYear):
     byTown = byTown.groupby(["Year", "Party"]).agg(pd.Series.count).reset_index()
     byTown.set_index('Year', inplace=True)
     byTown.groupby('Party')["Target"].plot(legend = True)
+    plt.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+    plt.tight_layout()
+    plt.show()
+
+#for drawing graph about which institutions have added the picture to finna
+def drawInstitutionGraph(data, startYear, endYear):
+    dataYear = data[data["Year"] <= str(endYear)]
+    dataYear = dataYear[dataYear["Year"] >= str(startYear)]
+    groupInstitution = dataYear.groupby("Institution").size().reset_index(name='institutionCounts')
+    x = groupInstitution["Institution"]
+    y = groupInstitution["institutionCounts"]
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_xticks(np.arange(len(x)))
+    ax.set_xticklabels(x, rotation = 90)
+    ax.bar(x, y)
+    fig.tight_layout()
+
+#for plotting how diversely politician are present in different institutions
+def institutionsPoliticians(data, startYear, endYear):
+    dataYear = data[data["Year"] <= str(endYear)]
+    dataYear = dataYear[dataYear["Year"] >= str(startYear)]
+    s = pd.crosstab(dataYear['Institution'], dataYear['Party']).apply(lambda r: r/r.sum(), axis=1)
+    s.plot.bar(stacked=True)
+    plt.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+    plt.tight_layout()
+    plt.show()
+    
+#for showing in how many pictures politicians were in
+def politicianCount(data, startYear, endYear):
+    dataYear = data[data["Year"] <= str(endYear)]
+    dataYear = dataYear[dataYear["Year"] >= str(startYear)]
+    politicianN = dataYear.groupby("Target").size().reset_index(name="PoliticianCount")
+    politicianN = politicianN.sort_values(by="PoliticianCount", ascending=False)
+    fig, ax = plt.subplots()
+    y_pos = np.arange(len(politicianN["Target"]))
+    ax.barh(y_pos, politicianN["PoliticianCount"], align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(politicianN["Target"])
+    ax.invert_yaxis()
 
 #actually runs the program
 #the program runs quite a while, but i think that is mostly because of the multiple queries you have to make to Finna
+
 townList = input("Enter the path to your town list: ")
 searchwordList = input("Enter the path to your searchword list: ")
 start = input("Enter start year: ")
 end = input("Enter end year: ")
+
 print("Please wait. This may take a while, especially if your searchword list is very long.")
 print('...')
 
 #My location tl: C:\Users\mikko\OneDrive\Työpöytä\YliopistoB\Elements - Digi\CompLitProj\Kunnat.csv
+#C:\Users\mikko\OneDrive\Työpöytä\YliopistoB\Elements - Digi\CompLitProj\KansanedustajatTesti.txt
 #My location swl1: C:\Users\mikko\OneDrive\Työpöytä\YliopistoB\Elements - Digi\CompLitProj\Kansanedustajat1972.txt
 #My location swl2: C:\Users\mikko\OneDrive\Työpöytä\YliopistoB\Elements - Digi\CompLitProj\Kansanedustajat1991.txt
 result, partiesToNumber = getPhotoMetadata(searchwordList, getTowns(townList))
 result = result.drop_duplicates()
+institutionsPoliticians(result, int(start), int(end))
 drawLineGraph(result, int(start), int(end))
+drawInstitutionGraph(result, int(start), int(end))
 drawGeoPlots(result, int(start), int(end))
+politicianCount(result, int(start), int(end))
+
 
 #shows the plots
 plt.show()
