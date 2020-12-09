@@ -296,6 +296,7 @@ print('...')
 #My location swl1: C:\Users\mikko\OneDrive\Työpöytä\YliopistoB\Elements - Digi\CompLitProj\Kansanedustajat1972.txt
 #My location swl2: C:\Users\mikko\OneDrive\Työpöytä\YliopistoB\Elements - Digi\CompLitProj\Kansanedustajat1991.txt
 result, partiesToNumber = getPhotoMetadata(searchwordList, getTowns(townList))
+result.to_csv(r"C:\Users\mikko\OneDrive\Työpöytä\YliopistoB\Elements - Digi\CompLitProj\dataframe1991.csv")
 result = result.drop_duplicates()
 institutionsPoliticians(result, int(start), int(end))
 drawLineGraph(result, int(start), int(end))
